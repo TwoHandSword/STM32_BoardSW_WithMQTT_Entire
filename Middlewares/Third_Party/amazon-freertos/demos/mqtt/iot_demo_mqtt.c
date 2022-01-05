@@ -28,6 +28,8 @@
  * @brief Demonstrates usage of the MQTT library.
  */
 
+#include "aws_RxParser.h"
+
 /* The config header is always included first. */
 #include "iot_config.h"
 
@@ -238,6 +240,7 @@ static void _operationCompleteCallback( void * param1,
 static void _mqttSubscriptionCallback( void * param1,
                                        IotMqttCallbackParam_t * const pPublish )
 {
+	int payloadlen=0;
     int acknowledgementLength = 0;
     size_t messageNumberIndex = 0, messageNumberLength = 1;
     IotSemaphore_t * pPublishesReceived = ( IotSemaphore_t * ) param1;
@@ -260,6 +263,13 @@ static void _mqttSubscriptionCallback( void * param1,
                 pPublish->u.message.info.qos,
                 pPublish->u.message.info.payloadLength,
                 pPayload );
+
+    /*yhs */
+    payloadlen=pPublish->u.message.info.payloadLength;
+
+    aws_RxMqttParse(pPayload,payloadlen);
+
+
 
     /* Find the message number inside of the PUBLISH message. */
     for( messageNumberIndex = 0; messageNumberIndex < pPublish->u.message.info.payloadLength; messageNumberIndex++ )
@@ -501,7 +511,7 @@ static int _establishMqttConnection( bool awsIotMqttMode,
  * @return `EXIT_SUCCESS` if the subscription operation succeeded; `EXIT_FAILURE`
  * otherwise.
  */
-static int _modifySubscriptions( IotMqttConnection_t mqttConnection,
+int _modifySubscriptions( IotMqttConnection_t mqttConnection,
                                  IotMqttOperationType_t operation,
                                  const char ** pTopicFilters,
                                  void * pCallbackParameter )
